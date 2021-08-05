@@ -1636,13 +1636,13 @@ var armory_trait_internal_CanvasScript = function(canvasName,font) {
 			if(armory_ui_Canvas.themes.length == 0) {
 				armory_ui_Canvas.themes.push(armory_ui_Themes.light);
 			}
-			iron_data_Data.getFont(font,function(f) {
+			iron_data_Data.getFont(font,function(defaultFont) {
 				var c = JSON.parse(blob.toString());
 				if(c.theme == null) {
 					c.theme = armory_ui_Canvas.themes[0].NAME;
 				}
 				var tmp = armory_ui_Canvas.getTheme(c.theme);
-				_gthis.cui = new zui_Zui({ font : f, theme : tmp});
+				_gthis.cui = new zui_Zui({ font : defaultFont, theme : tmp});
 				if(c.assets == null || c.assets.length == 0) {
 					_gthis.canvas = c;
 				} else {
@@ -1653,14 +1653,25 @@ var armory_trait_internal_CanvasScript = function(canvasName,font) {
 						var asset = [_g1[_g]];
 						++_g;
 						var file = asset[0].name;
-						iron_data_Data.getImage(file,(function(asset) {
-							return function(image) {
-								armory_ui_Canvas.assetMap.h[asset[0].id] = image;
-								if((loaded += 1) >= c.assets.length) {
-									_gthis.canvas = c;
-								}
-							};
-						})(asset));
+						if(file != null && StringTools.endsWith(file.toLowerCase(),".ttf")) {
+							iron_data_Data.getFont(file,(function(asset) {
+								return function(f) {
+									armory_ui_Canvas.assetMap.h[asset[0].id] = f;
+									if((loaded += 1) >= c.assets.length) {
+										_gthis.canvas = c;
+									}
+								};
+							})(asset));
+						} else {
+							iron_data_Data.getImage(file,(function(asset) {
+								return function(image) {
+									armory_ui_Canvas.assetMap.h[asset[0].id] = image;
+									if((loaded += 1) >= c.assets.length) {
+										_gthis.canvas = c;
+									}
+								};
+							})(asset));
+						}
 					}
 				}
 			});
